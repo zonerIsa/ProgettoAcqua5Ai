@@ -9,8 +9,14 @@ from scenes.good_ending_scene import GoodEnding
 class MapScene:
     def __init__(self, manager):
         self.manager = manager
+
+        self.smoke_img = pygame.image.load("assets/smoke.png").convert_alpha()
+        # Se    è troppo grande o piccola, ridimensionala così:
+        self.smoke_img = pygame.transform.scale(self.smoke_img, (200, 200))
         
-        self.map = pygame.image.load("assets/map.png")
+        img_originale = pygame.image.load("assets/map.png").convert_alpha()
+        self.map = pygame.transform.scale(img_originale, (1000, 600))
+
         self.barA = WaterBar(50, 50)
         self.barB = WaterBar(750, 50)
         
@@ -41,6 +47,10 @@ class MapScene:
             # Secondo volto (150, 0)
             Character("assets/villageA_chars.png", 220, 400, rect=pygame.Rect(150, 0, 150, 150)), 
         ]
+
+        self.smoke_img = pygame.image.load("assets/smoke.png").convert_alpha()
+        # Se è troppo grande o piccola, ridimensionala così:
+        self.smoke_img = pygame.transform.scale(self.smoke_img, (200, 200))
 
     def update(self, events, state):
 
@@ -89,29 +99,36 @@ class MapScene:
             if abs(self.char_walker.x - 500) <= 2:
                 self.fase_gioco = "domanda"
 
-        # FASE 4: Domanda a schermo "Guerra o Collaborazione?"
+        # FASE 4: Scelta Guerra
         elif self.fase_gioco == "domanda":
             for e in events:
                 if self.btn_collab.clicked(e):
                     self.fase_gioco = "collaborazione"
                 
                 if self.btn_guerra.clicked(e):
-                    # --- LOGICA GUERRA ---
+                    # Prepariamo i personaggi per la rissa
+                    # Creiamo un secondo personaggio che corre dal lato opposto
                     if self.losing_village == "B":
-                        # Il villaggio B attacca A per prendersi l'acqua
-                        state.water_a = 0 
+                        self.enemy_char = Character("assets/villageA_chars.png", 150, 400, rect=pygame.Rect(0, 0, 150, 150))
                     else:
-                        # Il villaggio A attacca B
-                        state.water_b = 0
+                        self.enemy_char = Character("assets/villageB_chars.png", 850, 400, rect=pygame.Rect(0, 0, 150, 150))
                     
                     self.fase_gioco = "conflitto"
                     self.timer = 0
 
-        # FASE 6: Conflitto (mostra il disastro prima del game over)
+        # FASE 6: Animazione Battaglia
         elif self.fase_gioco == "conflitto":
             self.timer += 1
-            # Facciamo tremare lo schermo o aspettiamo un momento
-            if self.timer > 100:
+            
+            # 1. I due personaggi corrono verso il centro (500)
+            if self.char_walker.x < 450: self.char_walker.x += 5
+            elif self.char_walker.x > 550: self.char_walker.x -= 5
+            
+            if self.enemy_char.x < 450: self.enemy_char.x += 5
+            elif self.enemy_char.x > 550: self.enemy_char.x -= 5
+
+            # 2. Dopo un po' che corrono, passiamo al Bad Ending
+            if self.timer > 150:
                 from scenes.bad_ending_scene import BadEnding
                 self.manager.change(BadEnding(self.manager))
 
@@ -171,9 +188,20 @@ class MapScene:
             self.btn_guerra.draw(screen)
 
 
-        # Se c'è guerra, coloriamo lo schermo di rosso trasparente
+        # Se siamo in guerra, disegna il secondo personaggio e il fumo
         if self.fase_gioco == "conflitto":
-            overlay = pygame.Surface((1000, 600)) # Dimensioni tua finestra
-            overlay.set_alpha(128) # Trasparenza
-            overlay.fill((255, 0, 0)) # Rosso
-            screen.blit(overlay, (0,0))
+            self.enemy_char.draw(screen)
+            
+            # Se i personaggi sono vicini al centro, facciamo apparire il fumo
+            if abs(self.char_walker.x - self.enemy_char.x) < 100:
+                # Effetto "tremolio" casuale per la battaglia
+                import random
+                offset_x = random.randint(-5, 5)
+                offset_y = random.randint(-5, 5)
+                
+                # Disegna il fumo al centro dello scontro
+                screen.blit(self.smoke_img, (400 + offset_x, 350 + offset_y))
+                
+                # Opzionale: aggiungi una scritta tipo "BANG!" o "POW!"
+                fight_text = self.font.render("SCONTRO!", True, (255, 0, 0))
+                screen.blit(fight_text, (450, 300))
