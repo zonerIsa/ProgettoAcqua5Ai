@@ -1,5 +1,4 @@
-import GlobalManager
-import ChoiceEnum
+from _common import ChoiceEnum
 
 class WaterSource:
     INSTANCE = None
