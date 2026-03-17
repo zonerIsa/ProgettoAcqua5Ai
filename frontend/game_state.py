@@ -1,8 +1,10 @@
+from backend.GlobalManager import GlobalManager
+
 class GameState:
 
     def __init__(self):
 
-        self.year = 2025
+        self.year = GlobalManager.INSTANCE.time.year
 
         self.water_a = 100
         self.water_b = 100

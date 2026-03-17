@@ -1,5 +1,6 @@
 import pygame
 from frontend.ui.water_bar import WaterBar
+from frontend.ui.humor_bar import HumorBar
 from frontend.sprites.character import Character
 from frontend.settings import *
 
@@ -27,6 +28,9 @@ class MapScene:
 
         self.barA = WaterBar(50, 50)
         self.barB = WaterBar(750, 50)
+
+        self.humor_barA = HumorBar(50, 90)
+        self.humor_barB = HumorBar(750, 90)
         
         self.timer = 0
         self.font = pygame.font.SysFont(None, 30)
@@ -63,6 +67,8 @@ class MapScene:
 
     def update(self, events, state):
 
+        state.humor_a = Village.VILLAGGIO_A.morale
+        state.humor_b = Village.VILLAGGIO_B.morale
         # FASE 1: Scelta di chi perde acqua
         if self.fase_gioco == "scelta_iniziale":
             for e in events:
@@ -91,6 +97,8 @@ class MapScene:
                 #if self.losing_village == "B": state.water_b -= 10
                 state.water_a = Village.VILLAGGIO_A.riserva_acqua
                 state.water_b = Village.VILLAGGIO_B.riserva_acqua
+                state.humor_a = Village.VILLAGGIO_A.morale
+                state.humor_b = Village.VILLAGGIO_B.morale
                 print(f"a: {state.water_a} - {Village.VILLAGGIO_A.riserva_acqua}\n")
                 print(f"b: {state.water_b} - {Village.VILLAGGIO_B.riserva_acqua}")
 
@@ -121,7 +129,7 @@ class MapScene:
             for e in events:
                 if self.btn_collab.clicked(e):
                     self.fase_gioco = "collaborazione"
-                    GlobalManager.INSTANCE.choice = ChoiceEnum.SHARED
+                    GlobalManager.INSTANCE.set_choice(ChoiceEnum.SHARED)
                 
                 if self.btn_guerra.clicked(e):
                     # Prepariamo i personaggi per la rissa
@@ -164,6 +172,8 @@ class MapScene:
                     #if self.losing_village == "B": state.water_b -= 10
                     state.water_a = Village.VILLAGGIO_A.riserva_acqua
                     state.water_b = Village.VILLAGGIO_B.riserva_acqua
+                    state.humor_a = Village.VILLAGGIO_A.morale
+                    state.humor_b = Village.VILLAGGIO_B.morale
                     print(f"a: {state.water_a} - {Village.VILLAGGIO_A.riserva_acqua}\n")
                     print(f"b: {state.water_b} - {Village.VILLAGGIO_B.riserva_acqua}")
                 else:
@@ -187,8 +197,20 @@ class MapScene:
         self.barA.draw(screen, state.water_a)
         self.barB.draw(screen, state.water_b)
 
+        self.humor_barA.draw(screen, state.humor_a)
+        self.humor_barB.draw(screen, state.humor_b)
+
         year_text = self.font.render(f"Year: {state.year}", True, (255, 255, 255))
         screen.blit(year_text, (450, 20))
+
+        numero_persone_a = Village.VILLAGGIO_A.num_persone
+        numero_persone_b = Village.VILLAGGIO_B.num_persone
+
+        persone_a_text = self.font.render(f"Popolazione: {numero_persone_a}", True, (150, 75, 0))
+        persone_b_text = self.font.render(f"Popolazione: {numero_persone_b}", True, (150, 75, 0))
+
+        screen.blit(persone_a_text, (50, 110))
+        screen.blit(persone_b_text, (750, 110))
 
         # Disegno Personaggi Statici
         for c in self.characters:

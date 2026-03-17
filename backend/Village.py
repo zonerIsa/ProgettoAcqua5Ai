@@ -3,7 +3,7 @@ from backend.WaterSource import WaterSource
 class Village:
     VILLAGGIO_A = None
     VILLAGGIO_B = None
-    SOGLIA_ACQUA_CRITICA   = 10   # % sotto cui scatta la crisi idrica
+    SOGLIA_ACQUA_CRITICA   = 30   # % sotto cui scatta la crisi idrica
     SOGLIA_MORALE_GUERRA   = 40   # % sotto cui si apre l'opzione guerra/pace
     DECREMENTO_MORALE      = 8    # punti morale persi ogni anno in crisi
     RECUPERO_MORALE        = 5    # punti morale recuperati ogni anno fuori crisi
