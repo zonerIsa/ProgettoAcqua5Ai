@@ -179,6 +179,36 @@ class MapScene:
                 else:
                     self.manager.change(GoodEnding(self.manager))
 
+    def _draw_bars_panel(self, screen, x, y, width, height, label_water, label_humor,
+                         water_val, humor_val, bar_water, bar_humor):
+        """
+        Pannello 1: sfondo nero semi-trasparente con bordo bianco.
+        Contiene scritta + barra Water e scritta + barra Felicità.
+        """
+        # Sfondo semi-trasparente
+        panel_surf = pygame.Surface((width, height), pygame.SRCALPHA)
+        panel_surf.fill((0, 0, 0, 140))
+        screen.blit(panel_surf, (x, y))
+ 
+        # Bordo bianco
+        pygame.draw.rect(screen, (255, 255, 255), (x, y, width, height), 2, border_radius=6)
+ 
+        label_font = pygame.font.SysFont("Arial", 13)
+ 
+        # --- Riga WATER ---
+        water_label_surf = label_font.render(label_water, True, (100, 200, 255))
+        screen.blit(water_label_surf, (x + 8, y + 8))
+        bar_water.x = x + 8
+        bar_water.y = y + 26
+        bar_water.draw(screen, water_val)
+ 
+        # --- Riga FELICITA ---
+        humor_label_surf = label_font.render(label_humor, True, (255, 220, 80))
+        screen.blit(humor_label_surf, (x + 8, y + 50))
+        bar_humor.x = x + 8
+        bar_humor.y = y + 68
+        bar_humor.draw(screen, humor_val)
+
     def draw(self, screen, state):
 
         self.title_font = pygame.font.SysFont("Arial", 18, bold=True)
@@ -193,23 +223,40 @@ class MapScene:
 
         screen.blit(self.map, (0, 0))
 
-        self.barA.draw(screen, state.water_a)
-        screen.blit(self.title_font.render("water", True, (255, 255, 255)), (50, 28))
-        self.barB.draw(screen, state.water_b)
-        screen.blit(self.title_font.render("water", True, (255, 255, 255)), (750, 28))
 
-        self.humor_barA.draw(screen, state.humor_a)
-        screen.blit(self.title_font.render("felicità", True, (255, 255, 255)), (50, 70))
-        self.humor_barB.draw(screen, state.humor_b)
-        screen.blit(self.title_font.render("felicità", True, (255, 255, 255)), (750, 70))
+         # ── PANNELLO VILLAGGIO A (in alto a sinistra) ──────────────────────────
+        self._draw_bars_panel(
+            screen,
+            x=25, y=10,
+            width=220, height=130,
+            label_water="Water",
+            label_humor="Felicità",
+            water_val=state.water_a,
+            humor_val=state.humor_a,
+            bar_water=self.barA,
+            bar_humor=self.humor_barA,
+        )
+ 
+        # ── PANNELLO VILLAGGIO B (in alto a destra) ────────────────────────────
+        self._draw_bars_panel(
+            screen,
+            x=725, y=10,
+            width=220, height=130,
+            label_water="Water",
+            label_humor="Felicità",
+            water_val=state.water_b,
+            humor_val=state.humor_b,
+            bar_water=self.barB,
+            bar_humor=self.humor_barB,
+        )
 
-        year_text = self.font.render(f"Year: {state.year}", True, (255, 255, 255))
+        year_text = self.font.render(f"Year: {state.year}", True, (0, 0, 0))
         screen.blit(year_text, (450, 20))
 
         numero_persone_a = Village.VILLAGGIO_A.num_persone
         numero_persone_b = Village.VILLAGGIO_B.num_persone
-        screen.blit(self.font.render(f"Popolazione: {numero_persone_a}", True, (150, 75, 0)), (50, 110))
-        screen.blit(self.font.render(f"Popolazione: {numero_persone_b}", True, (150, 75, 0)), (750, 110))
+        screen.blit(self.font.render(f"Popolazione: {numero_persone_a}", True, (255, 255, 255)), (50, 110))
+        screen.blit(self.font.render(f"Popolazione: {numero_persone_b}", True, (255, 255, 255)), (750, 110))
 
         for c in self.characters:
             c.draw(screen)
